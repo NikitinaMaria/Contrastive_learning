@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.resnet import resnet18, resnet34, resnet50
+from torchvision.models.resnet import resnet18
 
 
 class Model(nn.Module):
@@ -13,25 +13,16 @@ class Model(nn.Module):
         if arch == "resnet18":
             module = resnet18()
             in_size = 512
-        elif arch == "resnet34":
-            module = resnet34()
-            in_size = 512
-        elif arch == "resnet50":
-            module = resnet50()
-            in_size = 2048
-        elif arch == "MobileNet2":
-            module = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=False)
-            in_size = 327680
         else:
-            raise Exception("Unknown module {}".format(repr(arch)))
+            raise Exception("Wrong architecture {}".format(repr(arch)))
         for name, module in module.named_children():
             if name == "conv1":
                 module = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
             if not isinstance(module, nn.Linear) and not isinstance(module, nn.MaxPool2d):
                 self.f.append(module)
-        # encoder
+        # Энкодер
         self.f = nn.Sequential(*self.f)
-        # projection head
+        # Проекции
         self.g = nn.Sequential(
             nn.Linear(in_size, 512, bias=False),
             nn.BatchNorm1d(512),
